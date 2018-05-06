@@ -24,15 +24,22 @@ yAverage = yAverage(1:n*nSamples,1); %przyciêcie tabeli z próbkami do idealnej d
 yAverage = reshape(yAverage,nSamples,n);
 yAverage = mean(yAverage,1);
 
-
+yNew = yFiltered;
+for i = 1:n
+    for k = 1:nSamples
+       
+       yNew((i-1)*nSamples + k,1) = yAverage(1,i);
+    end
+end
+yNew = yNew(1:n*
 
 %--------------------- KONIEC ------ poziom dŸwiêku A uœredniony wed³ug charakterystyki czasowej F
 
 
 if (1)
     
-    plot(y)
+    %plot(y)
     hold on
-    plot(yFiltered)
+    plot(yNew)
     %sound(y,Fs)%odtwórz 
 end

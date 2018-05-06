@@ -8,7 +8,8 @@ F = 0.125; %stala czasowa fast
 %----------------KONIEC sta³ych-------------
 
 
-[y,Fs] = audioread('applause.wav');
+%[y,Fs] = audioread('applause.wav');
+[y,Fs] = audioread('muscle-car.wav');
 time = length(y)/Fs;
 
 
@@ -24,15 +25,27 @@ yAverage = yAverage(1:n*nSamples,1); %przyciêcie tabeli z próbkami do idealnej d
 yAverage = reshape(yAverage,nSamples,n);
 yAverage = mean(yAverage,1);
 
+%yAverage  RMS ???
 
+Laf = 10 * log((yAverage/p0).^2); %poziom ciœnienia akustycznego 
+
+
+yNew = yFiltered;
+for i = 1:n
+    for k = 1:nSamples
+       
+       yNew((i-1)*nSamples + k,1)= Laf(1,i);
+    end
+end
+yNew = yNew(1:n*nSamples);
 
 %--------------------- KONIEC ------ poziom dŸwiêku A uœredniony wed³ug charakterystyki czasowej F
 
 
 if (1)
     
-    plot(y)
-    hold on
-    plot(yFiltered)
+    %plot(y(1:n*nSamples))
+   % hold on
+    plot(yNew)
     %sound(y,Fs)%odtwórz 
 end
