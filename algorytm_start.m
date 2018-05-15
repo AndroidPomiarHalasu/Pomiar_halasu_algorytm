@@ -8,29 +8,31 @@ F = 0.125; %stala czasowa fast
 %----------------KONIEC sta³ych-------------
 
 
-%[y,Fs] = audioread('applause.wav');
-[y,Fs] = audioread('muscle-car.wav');
+[y,Fs] = audioread('applause.wav');
+%[y,Fs] = audioread('muscle-car.wav');
 time = length(y)/Fs;
 
 
 
 %--------------------- START ------ poziom dŸwiêku A uœredniony wed³ug charakterystyki czasowej F
-yFiltered = filterA(y, Fs);
+yA = filterA(y, Fs);
+
+Lpa = 10 * log((yA.^2/(p0^2))); %poziom ciœnienia akustycznego 
+
 %uœrednianie sygna³u dla sta³ej czasoej FAST:
 nSamples = round(F * Fs); %liczba próbek przypadaj¹ca na sta³¹ czasow¹
 
-yAverage = yFiltered;
-n = round(length(y)/nSamples); % iloœæ oddzielnych uœrednionych wartoœci
-yAverage = yAverage(1:n*nSamples,1); %przyciêcie tabeli z próbkami do idealnej d³ugoœci, by zmieniæ kszta³t
-yAverage = reshape(yAverage,nSamples,n);
-yAverage = mean(yAverage,1);
+Laf = Lpa;
+n = round(length(yA)/nSamples); % iloœæ oddzielnych uœrednionych wartoœci
+Laf = Laf(1:n*nSamples,1); %przyciêcie tabeli z próbkami do idealnej d³ugoœci, by zmieniæ kszta³t
+Laf = reshape(Laf,nSamples,n);
+Laf = mean(Laf,1);
 
 %yAverage  RMS ???
 
-Laf = 10 * log((yAverage/p0).^2); %poziom ciœnienia akustycznego 
 
-
-yNew = yFiltered;
+%u¿ywane do wykreœlenia poziomu, powiela wyniki co sta³¹ czasow¹ F
+yNew = yA;
 for i = 1:n
     for k = 1:nSamples
        
@@ -41,6 +43,11 @@ yNew = yNew(1:n*nSamples);
 
 %--------------------- KONIEC ------ poziom dŸwiêku A uœredniony wed³ug charakterystyki czasowej F
 
+%--------------------------------------START równowa¿ny poziom dŸwiêku A
+
+
+
+%--------------------------------------KONIEC równowa¿ny poziom dŸwiêku A
 
 if (1)
     
