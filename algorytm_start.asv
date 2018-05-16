@@ -95,13 +95,13 @@ end
 %--------------------------------------KONIEC równowa¿ny poziom dŸwiêku A
 
 %wyœwietl ca³oœæ na 3 wykresach:
-figure;
+figure(1);
 subplot(3,1,1);
-plot(yLaf);
 title('poziom dŸwiêku A uœredniony wed³ug charakterystyki czasowej F')
-subplot(3,1,2);
-plot(yLaqt);
-title('równowa¿ny poziom dŸwiêku A');
+plot(yLaf);
+subplot(3,2,1);
+title('równowa¿ny poziom dŸwiêku A')
+plot(y:a);
 
 
 
