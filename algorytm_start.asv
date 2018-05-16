@@ -58,7 +58,7 @@ if (plotLaf)
 end
 
 %--------------------------------------START równowa¿ny poziom dŸwiêku A
-T = 0.125; %czas obserwacji
+T = 0.4; %czas obserwacji
 nSamplesT = round(T * Fs); %iloœæ próbek przypadaj¹ca na czas obserwacji
 sampleTime = 1/Fs; %czas trwania jednej próbki
 nT = round(length(yA)/nSamplesT); % iloœæ odddzielnych sca³kowanych wartoœci
@@ -81,7 +81,9 @@ end
 yLaqt = yA;
 for i = 1:nF
     for k = 1:nSamplesT  
-       yLaqt((i-1)*nSamplesT + k,1)= Laqt(i);
+       n = (i-1)*nSamplesT + k; %przetwarzana próbka
+       if(n > length(yLaqt)) continue; 
+       yLaqt(n,1)= Laqt(i);
     end
 end
 yLaqt = yLaqt(1:nF*nSamplesT);
@@ -95,13 +97,13 @@ end
 %--------------------------------------KONIEC równowa¿ny poziom dŸwiêku A
 
 %wyœwietl ca³oœæ na 3 wykresach:
-figure(1);
+figure;
 subplot(3,1,1);
-title('poziom dŸwiêku A uœredniony wed³ug charakterystyki czasowej F')
 plot(yLaf);
-subplot(3,2,1);
-title('równowa¿ny poziom dŸwiêku A')
-plot(y:a);
+title('poziom dŸwiêku A uœredniony wed³ug charakterystyki czasowej F')
+subplot(3,1,2);
+plot(yLaqt);
+title('równowa¿ny poziom dŸwiêku A');
 
 
 

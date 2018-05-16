@@ -24,10 +24,10 @@ p = (yA.^2)/(p0^2);%sta³a u³atwiaj¹ca dalsze obliczenia
 Lpa = 10 * log(p); %poziom ciœnienia akustycznego 
 
 %uœrednianie sygna³u dla sta³ej czasoej FAST:
-nSamplesF = round(F * Fs); %liczba próbek przypadaj¹ca na sta³¹ czasow¹
+nSamplesF = floor(F * Fs); %liczba próbek przypadaj¹ca na sta³¹ czasow¹, zaokr¹glenie w dó³
 
 Laf = Lpa;
-nF = round(length(yA)/nSamplesF); % iloœæ oddzielnych uœrednionych wartoœci
+nF = floor(length(yA)/nSamplesF); % iloœæ oddzielnych uœrednionych wartoœci
 Laf = Laf(1:nF*nSamplesF,1); %przyciêcie tabeli z próbkami do idealnej d³ugoœci, by zmieniæ kszta³t
 Laf = reshape(Laf,nSamplesF,nF);
 Laf = mean(Laf,1);
@@ -58,10 +58,10 @@ if (plotLaf)
 end
 
 %--------------------------------------START równowa¿ny poziom dŸwiêku A
-T = 0.125; %czas obserwacji
-nSamplesT = round(T * Fs); %iloœæ próbek przypadaj¹ca na czas obserwacji
+T = 0.4; %czas obserwacji
+nSamplesT = floor(T * Fs); %iloœæ próbek przypadaj¹ca na czas obserwacji, zaokr¹glenie w dó³
 sampleTime = 1/Fs; %czas trwania jednej próbki
-nT = round(length(yA)/nSamplesT); % iloœæ odddzielnych sca³kowanych wartoœci
+nT = floor(length(yA)/nSamplesT); % iloœæ odddzielnych sca³kowanych wartoœci
 
 %ca³kowanie, dla ka¿dego z przedzia³ów:
 
@@ -79,12 +79,14 @@ for i = 1:nT
 end
 %u¿ywane do wykreœlenia poziomu, powiela wyniki co sta³¹ czasow¹ T
 yLaqt = yA;
-for i = 1:nF
+for i = 1:nT
     for k = 1:nSamplesT  
-       yLaqt((i-1)*nSamplesT + k,1)= Laqt(i);
+       n = (i-1)*nSamplesT + k; %przetwarzana próbka
+       if(n > length(yLaqt)), continue; end
+       yLaqt(n,1)= Laqt(i);
     end
 end
-yLaqt = yLaqt(1:nF*nSamplesT);
+yLaqt = yLaqt(1:nT*nSamplesT);
 if (plotLaqt)
     
     %plot(y(1:n*nSamples))
