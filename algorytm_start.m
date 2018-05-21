@@ -58,24 +58,24 @@ if (plotLaf)
 end
 
 %--------------------------------------START równowa¿ny poziom dŸwiêku A
-T = 0.4; %czas obserwacji
+T = 1; %czas obserwacji
 nSamplesT = floor(T * Fs); %iloœæ próbek przypadaj¹ca na czas obserwacji, zaokr¹glenie w dó³
 sampleTime = 1/Fs; %czas trwania jednej próbki
 nT = floor(length(yA)/nSamplesT); % iloœæ odddzielnych sca³kowanych wartoœci
 
 %ca³kowanie, dla ka¿dego z przedzia³ów:
 
-integrateT = 0; %wartoœæ ca³ki w wyznaczonym przedziale
+sumT = 0; %wartoœæ ca³ki w wyznaczonym przedziale
 Laqt = zeros(nT,1);%poziom równowa¿ny
 
 for i = 1:nT
     for k = 1:nSamplesT
         n = (i-1)*nSamplesT + k; %przetwarzana próbka
         if(n+1 > length(p)),continue;end %ochrona przed wyjœciem za wektor
-        integrateT = integrateT + sampleTime * (p(n+1)+p(n))/2;%ca³kowanie trapezami
+        sumT = sumT + sampleTime * p(n);
     end
-    Laqt(i) = 10 * log(1/sampleTime * integrateT); %obliczanie poziomu równowa¿nego
-    integrateT = 0;
+    Laqt(i) = 10 * log(1/sampleTime * sumT); %obliczanie poziomu równowa¿nego
+    sumT = 0;
 end
 %u¿ywane do wykreœlenia poziomu, powiela wyniki co sta³¹ czasow¹ T
 yLaqt = yA;
@@ -96,6 +96,17 @@ if (plotLaqt)
 end
 %--------------------------------------KONIEC równowa¿ny poziom dŸwiêku A
 
+%--------------------------------------START poziom A ekspozycji na dŸwiêk
+
+
+%--------------------------------------KONIEC poziom A ekspozycji na dŸwiêk
+
+
+
+
+
+
+
 %wyœwietl ca³oœæ na 3 wykresach:
 figure;
 subplot(3,1,1);
@@ -103,7 +114,8 @@ plot(yLaf);
 title('poziom dŸwiêku A uœredniony wed³ug charakterystyki czasowej F')
 subplot(3,1,2);
 plot(yLaqt);
-title('równowa¿ny poziom dŸwiêku A');
+string = ['równowa¿ny poziom dŸwiêku A dla T=', num2str(T)];
+title(string);
 
 
 
