@@ -21,26 +21,25 @@ time = length(y)/Fs;
 yA = filterA(y, Fs);
 p = (yA.^2)/(p0^2);%sta³a u³atwiaj¹ca dalsze obliczenia
 
-Lpa = 10 * log(p); %poziom ciœnienia akustycznego 
+
 
 %uœrednianie sygna³u dla sta³ej czasoej FAST:
 nSamplesF = floor(F * Fs); %liczba próbek przypadaj¹ca na sta³¹ czasow¹, zaokr¹glenie w dó³
 
-Laf = Lpa;
+pAverage = p;
 nF = floor(length(yA)/nSamplesF); % iloœæ oddzielnych uœrednionych wartoœci
-Laf = Laf(1:nF*nSamplesF,1); %przyciêcie tabeli z próbkami do idealnej d³ugoœci, by zmieniæ kszta³t
-Laf = reshape(Laf,nSamplesF,nF);
-Laf = mean(Laf,1);
+pAverage = pAverage(1:nF*nSamplesF,1); %przyciêcie tabeli z próbkami do idealnej d³ugoœci, by zmieniæ kszta³t
+pAverage = reshape(pAverage,nSamplesF,nF);
+pAverage = mean(pAverage,1);
 
-%yAverage  RMS ???
-
+Lpa = 10 * log(pAverage); %poziom ciœnienia akustycznego 
 
 %u¿ywane do wykreœlenia poziomu, powiela wyniki co sta³¹ czasow¹ F
 yLaf = yA;
 for i = 1:nF
     for k = 1:nSamplesF
        
-       yLaf((i-1)*nSamplesF + k,1)= Laf(1,i);
+       yLaf((i-1)*nSamplesF + k,1)= Lpa(1,i);
     end
 end
 yLaf = yLaf(1:nF*nSamplesF);
