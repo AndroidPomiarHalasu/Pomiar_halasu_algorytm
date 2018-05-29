@@ -18,6 +18,7 @@ HIGH = 1;
 
 signal = zeros(samples,1);
 timeAvgSig = signal;
+timeAvgSig2 = signal;
 
 startSample = floor(startTime/deltaTime);
 stopSample = floor((time+startTime)/deltaTime);
@@ -28,16 +29,25 @@ for sample = 1:samples
     end 
 end
 
-
+%25 próbek na 0.125s
 %a = 24;
 b = 0.04;
 
 a = (1-b)/b;
 for sample = 1:samples
-    if sample == 1, last = 0; else last = timeAvgSig(sample - 1); end
-    now = signal(sample);
+   if sample == 1, last = 0; last2 = 0; else
+       last = timeAvgSig(sample - 1);
+       last2 = timeAvgSig2(sample-1);
+   end
+   now = signal(sample);
 
-   timeAvgSig(sample) = (a*last+now)*b;
+   timeAvgSig2(sample) = (a*last2+now)*b;
+   if sample-26 >= 1
+       timeAvgSig(sample) = last + 1/26 * now - 1/26*signal(sample-26);
+   else
+       timeAvgSig(sample) = last + 1/26 * now;
+   end
+   
 end
 
 
@@ -50,5 +60,6 @@ timeAxis = deltaTime:deltaTime:allTime;
 plot(timeAxis,signal);
 hold on;
 plot(timeAxis,timeAvgSig);
+plot(timeAxis,timeAvgSig2);
 axis([0,allTime,-0.1,HIGH+1]);
 legend('skok jednostkowy','usrednianie fast');
