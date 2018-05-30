@@ -22,7 +22,7 @@ y = zeros(Fs*allTime,1);
 amplitude = 1; freq = 1e3;
 for i = 1:allTime*Fs
     t = i * 1/Fs - 1/Fs;
-    y(i) = amplitude * sin(freq*2*pi()*t);
+    y(i) = amsin(freq*2*pi()*t);
 end
 %plot(y)
 
@@ -45,7 +45,7 @@ pAverage = pAverage(1:nF*nSamplesF,1); %przyciêcie tabeli z próbkami do idealnej
 pAverage = reshape(pAverage,nSamplesF,nF);
 pAverage = mean(pAverage,1);
 
-Lpa = 10 * log10(pAverage); %poziom ciœnienia akustycznego 
+Lpa = 10 * log(pAverage); %poziom ciœnienia akustycznego 
 
 %u¿ywane do wykreœlenia poziomu, powiela wyniki co sta³¹ czasow¹ F
 yLaf = yA;
@@ -77,17 +77,17 @@ nT = floor(length(yA)/nSamplesT); % iloœæ odddzielnych sca³kowanych wartoœci
 
 %ca³kowanie, dla ka¿dego z przedzia³ów:
 
-Ea = 0; %wartoœæ ca³ki w wyznaczonym przedziale - ekspozycja a na dŸwiêk
+sumT = 0; %wartoœæ ca³ki w wyznaczonym przedziale
 Laqt = zeros(nT,1);%poziom równowa¿ny
 
 for i = 1:nT
     for k = 1:nSamplesT
         n = (i-1)*nSamplesT + k; %przetwarzana próbka
         if(n+1 > length(p)),continue;end %ochrona przed wyjœciem za wektor
-        Ea = Ea + sampleTime * p(n);
+        sumT = sumT + sampleTime * p(n);
     end
-    Laqt(i) = 10 * log10(1/T * Ea); %obliczanie poziomu równowa¿nego
-    Ea = 0;
+    Laqt(i) = 10 * log(1/sampleTime * sumT); %obliczanie poziomu równowa¿nego
+    sumT = 0;
 end
 %u¿ywane do wykreœlenia poziomu, powiela wyniki co sta³¹ czasow¹ T
 yLaqt = yA;
