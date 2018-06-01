@@ -1,9 +1,5 @@
 clear all;
 addpath('A-weighting_filter');
-%wykresy
-plotLaf = 0; %poziom dŸwiêku A uœredniony wed³ug charakterystyki czasowej F
-plotLaqt = 0; %równowa¿ny poziom dŸwiêku A
-
 
 %-----------------START sta³e-------------
 p0 = 2e-5; %ciœnienie odniesienia
@@ -11,18 +7,14 @@ F = 0.125; %stala czasowa fast
 %----------------KONIEC sta³ych-------------
 
 
-%[y,Fs] = audioread('applause.wav');
-%[y,Fs] = audioread('muscle-car.wav');
-
-
-%generuj sygna³ wzorcowy
-allTime = 1;
+%generuj sygna³ testowy
+allTime = 5;
 Fs = 48000;
 y = zeros(Fs*allTime,1);
-amplitude = 1; freq = 1e3;
+amplitude = 0.1; freq = 4e3;
 for i = 1:allTime*Fs
     t = i * 1/Fs - 1/Fs;
-    y(i) = amsin(freq*2*pi()*t);
+    y(i) = amplitude * sin(freq*2*pi()*t);
 end
 %plot(y)
 
@@ -36,7 +28,7 @@ p = (yA.^2)/(p0^2);%sta³a u³atwiaj¹ca dalsze obliczenia
 
 
 
-%uœrednianie sygna³u dla sta³ej czasoej FAST:
+%uœrednianie sygna³u dla sta³ej czasowej FAST:
 nSamplesF = floor(F * Fs); %liczba próbek przypadaj¹ca na sta³¹ czasow¹, zaokr¹glenie w dó³
 
 pAverage = p;
@@ -45,7 +37,7 @@ pAverage = pAverage(1:nF*nSamplesF,1); %przyciêcie tabeli z próbkami do idealnej
 pAverage = reshape(pAverage,nSamplesF,nF);
 pAverage = mean(pAverage,1);
 
-Lpa = 10 * log(pAverage); %poziom ciœnienia akustycznego 
+Lpa = 10 * log10(pAverage); %poziom ciœnienia akustycznego 
 
 %u¿ywane do wykreœlenia poziomu, powiela wyniki co sta³¹ czasow¹ F
 yLaf = yA;
@@ -61,51 +53,37 @@ yLaf = yLaf(1:nF*nSamplesF);
 
 
 
-if (plotLaf)
-    
-    %plot(y(1:n*nSamples))
-   % hold on
-    plot(yNew)
-    %sound(y,Fs)%odtwórz 
-end
 
 %--------------------------------------START równowa¿ny poziom dŸwiêku A
 T = 1; %czas obserwacji
 nSamplesT = floor(T * Fs); %iloœæ próbek przypadaj¹ca na czas obserwacji, zaokr¹glenie w dó³
 sampleTime = 1/Fs; %czas trwania jednej próbki
 nT = floor(length(yA)/nSamplesT); % iloœæ odddzielnych sca³kowanych wartoœci
+Laeq = zeros(nT,1);
+Ea = 0; %wartoœæ ca³ki w wyznaczonym przedziale - ekspozycja a na dŸwiêk
 
 %ca³kowanie, dla ka¿dego z przedzia³ów:
-
-sumT = 0; %wartoœæ ca³ki w wyznaczonym przedziale
-Laqt = zeros(nT,1);%poziom równowa¿ny
-
 for i = 1:nT
     for k = 1:nSamplesT
         n = (i-1)*nSamplesT + k; %przetwarzana próbka
         if(n+1 > length(p)),continue;end %ochrona przed wyjœciem za wektor
-        sumT = sumT + sampleTime * p(n);
+        Ea = Ea + sampleTime * p(n);
     end
-    Laqt(i) = 10 * log(1/sampleTime * sumT); %obliczanie poziomu równowa¿nego
-    sumT = 0;
+    Laeq(i) = 10 * log10(1/T * Ea); %obliczanie poziomu równowa¿nego
+    Ea = 0;
 end
+
+
 %u¿ywane do wykreœlenia poziomu, powiela wyniki co sta³¹ czasow¹ T
 yLaqt = yA;
 for i = 1:nT
     for k = 1:nSamplesT  
        n = (i-1)*nSamplesT + k; %przetwarzana próbka
        if(n > length(yLaqt)), continue; end
-       yLaqt(n,1)= Laqt(i);
+       yLaqt(n,1)= Laeq(i);
     end
 end
 yLaqt = yLaqt(1:nT*nSamplesT);
-if (plotLaqt)
-    
-    %plot(y(1:n*nSamples))
-   % hold on
-    plot(yLaqt)
-    %sound(y,Fs)%odtwórz 
-end
 %--------------------------------------KONIEC równowa¿ny poziom dŸwiêku A
 
 %--------------------------------------START poziom A ekspozycji na dŸwiêk

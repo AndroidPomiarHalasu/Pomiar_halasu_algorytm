@@ -6,27 +6,42 @@ clear all;hold off;
 allTime = 5; %czas okna obserwacji
 time = 1.5;%czas trwania skoku jednostkowego
 startTime = 2;
-samples = 1000;
-deltaTime = allTime/samples;
+samples = 48000;
+allSamples = allTime * samples;
+deltaTime = allTime/allSamples;
+
 
 fast = 0.125;
 slow = 1;
-
+p0 = 2e-5;
+RMSwindow = 200;%okno rms w iloœci próbek
+numberOfRMSWindows = allSamples/RMSwindow;
 
 LOW = 0;
-HIGH = 1;
+HIGH = 0.1;
 
-signal = zeros(samples,1);
-timeAvgSig = signal;
-timeAvgSig2 = signal;
+signal = zeros(allSamples,1);
+timeAvgSig = zeros(numberOfRMSWindows,1);
+
 
 startSample = floor(startTime/deltaTime);
 stopSample = floor((time+startTime)/deltaTime);
 
-for sample = 1:samples
+for sample = 1:allSamples
     if sample >= startSample && sample <= stopSample
         signal(sample) = HIGH;
     end 
+end
+
+signalRMS = zeros(numberOfRMSWindows,1);
+
+for sample = 1:numberOfRMSWindows%oblicz RMS
+    
+    for i = 1:RMSwindow
+         signalRMS(sample) = signalRMS(sample) + signal((sample-1)*RMSwindow + i)^2; %sumuj kwadrat próbek w oknie RMS
+    end
+   signalRMS(sample) = sqrt(signalRMS(sample));%RMS
+   
 end
 
 %25 próbek na 0.125s
@@ -34,20 +49,19 @@ end
 b = 0.04;
 
 a = (1-b)/b;
-for sample = 1:samples
-   if sample == 1, last = 0; last2 = 0; else
+for sample = 1:numberOfRMSWindows%F_RMS
+   if sample == 1, last = 0; else
        last = timeAvgSig(sample - 1);
-       last2 = timeAvgSig2(sample-1);
    end
-   now = signal(sample);
+   now = signalRMS(sample);
 
-   timeAvgSig2(sample) = (a*last2+now)*b;
-   if sample-26 >= 1
-       timeAvgSig(sample) = last + 1/26 * now - 1/26*signal(sample-26);
-   else
-       timeAvgSig(sample) = last + 1/26 * now;
-   end
-   
+   timeAvgSig(sample) = (a*last+now)*b;
+end
+
+Lf = timeAvgSig;
+for sample = 1:numberOfRMSWindows
+   Lf(sample) = 10 * log10(timeAvgSig(sample)/p0^2);
+    
 end
 
 
@@ -55,11 +69,10 @@ end
 
 
 
-
 timeAxis = deltaTime:deltaTime:allTime;
-plot(timeAxis,signal);
+plot(Lf);
 hold on;
-plot(timeAxis,timeAvgSig);
-plot(timeAxis,timeAvgSig2);
-axis([0,allTime,-0.1,HIGH+1]);
+%plot(timeAvgSig);
+
+%axis([0,allTime,-0.1,HIGH+1]);
 legend('skok jednostkowy','usrednianie fast');

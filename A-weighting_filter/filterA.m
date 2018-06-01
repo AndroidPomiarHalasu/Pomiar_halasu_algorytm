@@ -47,6 +47,7 @@ den = ((c2+f).^2) .* (c3+f) .* (c4+f) .* ((c5+f).^2);
 A = num./den;
 A = A(:);
 
+
 % filtering in the frequency domain
 XA = X.*A;
 

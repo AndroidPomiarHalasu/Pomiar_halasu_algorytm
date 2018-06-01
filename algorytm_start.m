@@ -1,9 +1,5 @@
 clear all;
 addpath('A-weighting_filter');
-%wykresy
-plotLaf = 0; %poziom dŸwiêku A uœredniony wed³ug charakterystyki czasowej F
-plotLaqt = 0; %równowa¿ny poziom dŸwiêku A
-
 
 %-----------------START sta³e-------------
 p0 = 2e-5; %ciœnienie odniesienia
@@ -11,36 +7,32 @@ F = 0.125; %stala czasowa fast
 %----------------KONIEC sta³ych-------------
 
 
-%[y,Fs] = audioread('applause.wav');
-%[y,Fs] = audioread('muscle-car.wav');
-
-
-%generuj sygna³ wzorcowy
-allTime = 1;
-Fs = 48000;
-y = zeros(Fs*allTime,1);
-amplitude = 1; freq = 1e3;
-for i = 1:allTime*Fs
+%//////////////////////////////////////////////////generuj sygna³ testowy
+time = 5; %dlugoœæ sygna³u w sekundach
+Fs = 48000; %czêstotliwoœæ próbkowania
+p = zeros(Fs*time,1); %inicjalizacja
+amplitude = 0.1; %amplituda generowanego sygna³u
+freq = 4e3;%czêstotliwoœæ generowanego sygna³u
+for i = 1:time*Fs
     t = i * 1/Fs - 1/Fs;
-    y(i) = amplitude * sin(freq*2*pi()*t);
+    p(i) = amplitude * sin(freq*2*pi()*t);
 end
-%plot(y)
 
-%koniec generacji sygna³u wzorcowego
-time = length(y)/Fs;
+%///////////////////////////////////// koniec generacji sygna³u wzorcowego
+
 
 
 %--------------------- START ------ poziom dŸwiêku A uœredniony wed³ug charakterystyki czasowej F
-yA = filterA(y, Fs);
-p = (yA.^2)/(p0^2);%sta³a u³atwiaj¹ca dalsze obliczenia
+pA = filterA(p, Fs);
+p = (pA.^2)/(p0^2);%sta³a u³atwiaj¹ca dalsze obliczenia
 
 
 
-%uœrednianie sygna³u dla sta³ej czasoej FAST:
+%uœrednianie sygna³u dla sta³ej czasowej FAST:
 nSamplesF = floor(F * Fs); %liczba próbek przypadaj¹ca na sta³¹ czasow¹, zaokr¹glenie w dó³
 
 pAverage = p;
-nF = floor(length(yA)/nSamplesF); % iloœæ oddzielnych uœrednionych wartoœci
+nF = floor(length(pA)/nSamplesF); % iloœæ oddzielnych uœrednionych wartoœci
 pAverage = pAverage(1:nF*nSamplesF,1); %przyciêcie tabeli z próbkami do idealnej d³ugoœci, by zmieniæ kszta³t
 pAverage = reshape(pAverage,nSamplesF,nF);
 pAverage = mean(pAverage,1);
@@ -48,7 +40,7 @@ pAverage = mean(pAverage,1);
 Lpa = 10 * log10(pAverage); %poziom ciœnienia akustycznego 
 
 %u¿ywane do wykreœlenia poziomu, powiela wyniki co sta³¹ czasow¹ F
-yLaf = yA;
+yLaf = pA;
 for i = 1:nF
     for k = 1:nSamplesF
        
@@ -61,51 +53,37 @@ yLaf = yLaf(1:nF*nSamplesF);
 
 
 
-if (plotLaf)
-    
-    %plot(y(1:n*nSamples))
-   % hold on
-    plot(yNew)
-    %sound(y,Fs)%odtwórz 
-end
 
 %--------------------------------------START równowa¿ny poziom dŸwiêku A
 T = 1; %czas obserwacji
 nSamplesT = floor(T * Fs); %iloœæ próbek przypadaj¹ca na czas obserwacji, zaokr¹glenie w dó³
 sampleTime = 1/Fs; %czas trwania jednej próbki
-nT = floor(length(yA)/nSamplesT); % iloœæ odddzielnych sca³kowanych wartoœci
+nT = floor(length(pA)/nSamplesT); % iloœæ odddzielnych sca³kowanych wartoœci
+Laeq = zeros(nT,1);
+Ea = 0; %wartoœæ ca³ki w wyznaczonym przedziale - ekspozycja a na dŸwiêk
 
 %ca³kowanie, dla ka¿dego z przedzia³ów:
-
-Ea = 0; %wartoœæ ca³ki w wyznaczonym przedziale - ekspozycja a na dŸwiêk
-Laqt = zeros(nT,1);%poziom równowa¿ny
-
 for i = 1:nT
     for k = 1:nSamplesT
         n = (i-1)*nSamplesT + k; %przetwarzana próbka
         if(n+1 > length(p)),continue;end %ochrona przed wyjœciem za wektor
         Ea = Ea + sampleTime * p(n);
     end
-    Laqt(i) = 10 * log10(1/T * Ea); %obliczanie poziomu równowa¿nego
+    Laeq(i) = 10 * log10(1/T * Ea); %obliczanie poziomu równowa¿nego
     Ea = 0;
 end
+
+
 %u¿ywane do wykreœlenia poziomu, powiela wyniki co sta³¹ czasow¹ T
-yLaqt = yA;
+yLaqt = pA;
 for i = 1:nT
     for k = 1:nSamplesT  
        n = (i-1)*nSamplesT + k; %przetwarzana próbka
        if(n > length(yLaqt)), continue; end
-       yLaqt(n,1)= Laqt(i);
+       yLaqt(n,1)= Laeq(i);
     end
 end
 yLaqt = yLaqt(1:nT*nSamplesT);
-if (plotLaqt)
-    
-    %plot(y(1:n*nSamples))
-   % hold on
-    plot(yLaqt)
-    %sound(y,Fs)%odtwórz 
-end
 %--------------------------------------KONIEC równowa¿ny poziom dŸwiêku A
 
 %--------------------------------------START poziom A ekspozycji na dŸwiêk
