@@ -4,6 +4,8 @@ addpath('A-weighting_filter');
 %-----------------START sta³e-------------
 p0 = 2e-5; %ciœnienie odniesienia
 F = 0.125; %stala czasowa fast
+RMSwindow = 240; %okno dla liczenia RMS - 240 próbek
+a = 24; b = 0.04; %wspó³czynniki do uœredniania czasowego
 %----------------KONIEC sta³ych-------------
 
 
@@ -17,7 +19,6 @@ for i = 1:time*Fs
     t = i * 1/Fs - 1/Fs;
     p(i) = amplitude * sin(freq*2*pi()*t);
 end
-
 %///////////////////////////////////// koniec generacji sygna³u wzorcowego
 
 
@@ -26,29 +27,29 @@ end
 pA = filterA(p, Fs);
 p = (pA.^2)/(p0^2);%sta³a u³atwiaj¹ca dalsze obliczenia
 
+%-----------------obliczanie RMS:
+RMSvalues = time*Fs / RMSwindow;
+yRMS= reshape(pA,RMSwindow,RMSvalues);%w kolumnach poszczególne wartoœci y do oddzielnych RMS
+yRMS = rms(yRMS,1);
+%-----------------KONIEC obliczanie RMS
 
-
-%uœrednianie sygna³u dla sta³ej czasowej FAST:
-nSamplesF = floor(F * Fs); %liczba próbek przypadaj¹ca na sta³¹ czasow¹, zaokr¹glenie w dó³
-
-pAverage = p;
-nF = floor(length(pA)/nSamplesF); % iloœæ oddzielnych uœrednionych wartoœci
-pAverage = pAverage(1:nF*nSamplesF,1); %przyciêcie tabeli z próbkami do idealnej d³ugoœci, by zmieniæ kszta³t
-pAverage = reshape(pAverage,nSamplesF,nF);
-pAverage = mean(pAverage,1);
-
-Lpa = 10 * log10(pAverage); %poziom ciœnienia akustycznego 
-
-%u¿ywane do wykreœlenia poziomu, powiela wyniki co sta³¹ czasow¹ F
-yLaf = pA;
-for i = 1:nF
-    for k = 1:nSamplesF
-       
-       yLaf((i-1)*nSamplesF + k,1)= Lpa(1,i);
-    end
+%-------------START uœrednianie sygna³u dla sta³ej czasowej FAST:
+last = 0; 
+yRMS_F = zeros(RMSvalues,1);
+for sample = 1:RMSvalues
+   if sample ~= 1,last = yRMS_F(sample - 1);end
+   now = yRMS(sample);
+   yRMS_F(sample) = (a*last+now)*b;
 end
-yLaf = yLaf(1:nF*nSamplesF);
+%-------------KONIEC uœrednianie sygna³u dla sta³ej czasowej FAST
 
+Lf = 10 * log10(yRMS_F.^2/p0^2); %poziom ciœnienia akustycznego uœredniony wg sta³ej czasowej F
+
+%u¿ywane do wykreœlenia poziomu, powiela wyniki co okno RMS
+outLf = zeros(Fs*time,1);
+for i = 1:RMSvalues
+    outLf((i-1)*RMSwindow+1 : i*RMSwindow) = ones(RMSwindow,1)*Lf(i);
+end
 %--------------------- KONIEC ------ poziom dŸwiêku A uœredniony wed³ug charakterystyki czasowej F
 
 
@@ -75,15 +76,10 @@ end
 
 
 %u¿ywane do wykreœlenia poziomu, powiela wyniki co sta³¹ czasow¹ T
-yLaqt = pA;
+outLaeq = zeros(nT*nSamplesT,1);
 for i = 1:nT
-    for k = 1:nSamplesT  
-       n = (i-1)*nSamplesT + k; %przetwarzana próbka
-       if(n > length(yLaqt)), continue; end
-       yLaqt(n,1)= Laeq(i);
-    end
+    outLaeq((i-1)*nSamplesT +1 : i*nSamplesT) = Laeq(i) * ones(nSamplesT,1);
 end
-yLaqt = yLaqt(1:nT*nSamplesT);
 %--------------------------------------KONIEC równowa¿ny poziom dŸwiêku A
 
 %--------------------------------------START poziom A ekspozycji na dŸwiêk
@@ -92,18 +88,13 @@ yLaqt = yLaqt(1:nT*nSamplesT);
 %--------------------------------------KONIEC poziom A ekspozycji na dŸwiêk
 
 
-
-
-
-
-
 %wyœwietl ca³oœæ na 3 wykresach:
 figure;
 subplot(3,1,1);
-plot(yLaf);
+plot(outLf);
 title('poziom dŸwiêku A uœredniony wed³ug charakterystyki czasowej F')
 subplot(3,1,2);
-plot(yLaqt);
+plot(outLaeq);
 string = ['równowa¿ny poziom dŸwiêku A dla T=', num2str(T)];
 title(string);
 
