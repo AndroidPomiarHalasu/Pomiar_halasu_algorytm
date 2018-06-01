@@ -4,18 +4,18 @@ addpath('A-weighting_filter');
 %-----------------START sta³e-------------
 p0 = 2e-5; %ciœnienie odniesienia
 F = 0.125; %stala czasowa fast
-RMSwindow = 240; %okno dla liczenia RMS - 240 próbek
+RMSwindow = 240; %okno dla liczenia RMS - ilosc próbek
 a = 24; b = 0.04; %wspó³czynniki do uœredniania czasowego
 %----------------KONIEC sta³ych-------------
 
 
 %//////////////////////////////////////////////////generuj sygna³ testowy
-time = 5; %dlugoœæ sygna³u w sekundach
+endTime = 5; %dlugoœæ sygna³u w sekundach
 Fs = 48000; %czêstotliwoœæ próbkowania
-p = zeros(Fs*time,1); %inicjalizacja
+p = zeros(Fs*endTime,1); %inicjalizacja
 amplitude = 0.1; %amplituda generowanego sygna³u
 freq = 4e3;%czêstotliwoœæ generowanego sygna³u
-for i = 1:time*Fs
+for i = 1:endTime*Fs
     t = i * 1/Fs - 1/Fs;
     p(i) = amplitude * sin(freq*2*pi()*t);
 end
@@ -28,7 +28,7 @@ pA = filterA(p, Fs);
 p = (pA.^2)/(p0^2);%sta³a u³atwiaj¹ca dalsze obliczenia
 
 %-----------------obliczanie RMS:
-RMSvalues = time*Fs / RMSwindow;
+RMSvalues = endTime*Fs / RMSwindow;
 yRMS= reshape(pA,RMSwindow,RMSvalues);%w kolumnach poszczególne wartoœci y do oddzielnych RMS
 yRMS = rms(yRMS,1);
 %-----------------KONIEC obliczanie RMS
@@ -43,10 +43,10 @@ for sample = 1:RMSvalues
 end
 %-------------KONIEC uœrednianie sygna³u dla sta³ej czasowej FAST
 
-Lf = 10 * log10(yRMS_F.^2/p0^2); %poziom ciœnienia akustycznego uœredniony wg sta³ej czasowej F
+Lf = 10 * log10(yRMS_F/p0^2); %poziom ciœnienia akustycznego uœredniony wg sta³ej czasowej F
 
 %u¿ywane do wykreœlenia poziomu, powiela wyniki co okno RMS
-outLf = zeros(Fs*time,1);
+outLf = zeros(Fs*endTime,1);
 for i = 1:RMSvalues
     outLf((i-1)*RMSwindow+1 : i*RMSwindow) = ones(RMSwindow,1)*Lf(i);
 end
@@ -87,16 +87,20 @@ end
 
 %--------------------------------------KONIEC poziom A ekspozycji na dŸwiêk
 
-
+time = 1/Fs : 1/Fs : endTime;
 %wyœwietl ca³oœæ na 3 wykresach:
 figure;
 subplot(3,1,1);
-plot(outLf);
+plot(time, outLf);
 title('poziom dŸwiêku A uœredniony wed³ug charakterystyki czasowej F')
 subplot(3,1,2);
-plot(outLaeq);
+plot(time, outLaeq);
 string = ['równowa¿ny poziom dŸwiêku A dla T=', num2str(T)];
 title(string);
 
+%dla sprawdzenia Lf wg rozporz¹dzenia ministra
+%close all;
+%maxLf = max(Lf);
+%plot(time(1:Fs),outLf(1:Fs)-maxLf);
 
 
