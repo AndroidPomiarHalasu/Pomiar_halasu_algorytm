@@ -17,11 +17,11 @@ amplitude = 0.1; %amplituda generowanego sygna³u
 freq = 4e3;%czêstotliwoœæ generowanego sygna³u
 for i = 1:endTime*Fs
     t = i * 1/Fs - 1/Fs;
-    p(i) = amplitude * sin(freq*2*pi()*t);
+    p(i) = amplitude * sin(freq*2*pi()*t);  
 end
 %///////////////////////////////////// koniec generacji sygna³u wzorcowego
 
-
+pInput = p; %kopia sygna³u wejœciowego
 
 %--------------------- START ------ poziom dŸwiêku A uœredniony wed³ug charakterystyki czasowej F
 pA = filterA(p, Fs);
@@ -98,6 +98,16 @@ plot(time, outLaeq);
 string = ['równowa¿ny poziom dŸwiêku A dla T=', num2str(T)];
 title(string);
 
+
+%subplot(3,1,3);
+figure;
+subplot(211);
+plot(time(1:100),pInput(1:100));
+title('sygnal wejsciowy');
+
+subplot(212);
+plot(time(1:100),yRMS(1:100));
+title('RMS sygna³ wejœciowy');
 %dla sprawdzenia Lf wg rozporz¹dzenia ministra
 %close all;
 %maxLf = max(Lf);
