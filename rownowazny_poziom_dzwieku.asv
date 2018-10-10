@@ -122,13 +122,6 @@ end
 checkedRef
 response
 if classOfMeter ~= -1
-    string = ['b³êdy w normie dla miernika klasy ',num2str(classOfMeter)];
-    disp(string)
-else
-    string = ['b³edy wysz³y po za mo¿liwe zakresy'];
-    disp(string)
-end
-
 %plot(checkedRef,response);
 %hold on;
 %plot(reference(:,TIME),reference(:,OUTPUT));

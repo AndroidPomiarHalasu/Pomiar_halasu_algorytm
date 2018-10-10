@@ -2,6 +2,7 @@
 
 clear all;
 
+
 %-----------------START sta³e-------------
 endTime = 0.02; %dlugoœæ sygna³u w sekundach
 stepTime = 0.005;%d³ugoœæ skoku
@@ -63,6 +64,9 @@ subplot(211);
 plot(1:samples,Lf);
 title('poziom ciœnienia akustycznego uœredniony wg sta³ej czasowej F');
 
+
+%----------------------------Sprawdzanie odpowiedzi z danymi referencyjnymi
+load('referenceData/conventionalMeterReference.mat');
 
 
 
