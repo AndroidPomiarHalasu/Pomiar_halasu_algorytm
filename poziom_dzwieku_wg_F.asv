@@ -1,8 +1,12 @@
-%algorytm nie stosuje korekcji A
+%algorytm nie stosuje korekcji A i dzia³a na wejœciowym sygnale RMS !!!
 
 clear all;
 
+
 %-----------------START sta³e-------------
+F = 0.125; %stala czasowa fast
+a = 24; b = 0.04; %wspó³czynniki do uœredniania czasowego
+
 endTime = 1; %dlugoœæ sygna³u w sekundach
 
 p0 = 2e-5; %ciœnienie odniesienia
@@ -39,41 +43,46 @@ for j = 1:numberOfRMSWindows%oblicz RMS
 end
 %/////////////////////////////////////koniec obliczania RMS
 
-%--------------------------------------START równowa¿ny poziom dŸwiêku 
-observationTime = 3; %czas obserwacji
-observationSamples = floor(observationTime * Fs); %iloœæ próbek przypadaj¹ca na czas obserwacji, zaokr¹glenie w dó³
-sampleTime = 1/Fs; %czas trwania jednej próbki
-numberOfIntergations = floor(length(inputRMS)/observationSamples); % iloœæ odddzielnych sca³kowanych wartoœci
-Leq = zeros(numberOfIntergations,1);
 
-sum=0;
+%-------------START uœrednianie sygna³u dla sta³ej czasowej FAST:
+last = 0; 
+inputRMS_F = zeros(samples,1);
+for sample = 1:samples
+   if sample ~= 1,last = inputRMS_F(sample - 1);end
+   now = inputRMS(sample);
+   inputRMS_F(sample) = (a*last+now)*b;
+end
+%-------------KONIEC uœrednianie sygna³u dla sta³ej czasowej FAST
 
-for i = 1:numberOfRMSWindows
-   
-    if mod(i,observationSamples) == 0, sum = 0; end
-    Lp = 10*log10((inputRMS(i)/p0)^2); %oblicz poziom dŸwiêku
-    sum = sum  + sampleTime * 10^(0.1*Lp);
-    
-    if sum < p0^2, Leq(i) = 0;
-    else
-        Leq(i) = 10 * log10(sum/observationTime); %obliczanie poziomu równowa¿nego
+Lf = zeros(samples,1);
+for sample = 1:samples
+    if inputRMS_F(sample) < p0^2, Lf(sample) = 0;
+    else Lf(sample) = 10 * log10(inputRMS_F(sample)/p0^2); %poziom ciœnienia akustycznego uœredniony wg sta³ej czasowej F
     end
-    
 end
 
 
 
+figure;
+subplot(211);
+plot(1:samples,inputRMS);
+title('sygna³ RMS wejœciowy');
+
+subplot(212);
+plot(1:samples,inputRMS_F);
+title('sygna³ RMS wejœciowy po uœrednieniu sta³¹ czasow¹ F');
 
 figure;
-subplot(111);
-plot(time,Leq);
-xlabel('czas[s]');
-ylabel('dB');
-title('równowa¿ny poziom dŸwiêku');
+subplot(211);
+plot(1:samples,Lf);
+title('poziom ciœnienia akustycznego uœredniony wg sta³ej czasowej F');
+
+
+
 
 
 %----------------------------Sprawdzanie odpowiedzi z danymi referencyjnymi
-load('referenceData/integratingMeterReference.mat');
+load('referenceData/conventionalMeterReference.mat');
 
 %RMSwindowTime to najmniejszy czas jaki mo¿na sprawdziæ
 %co zawieraja poszczegolne kolumny danych referencyjnych:
@@ -122,13 +131,18 @@ end
 checkedRef
 response
 if classOfMeter ~= -1
+    string = ['b³êdy w normie dla miernika klasy ',num2str(classOfMeter)];
+    disp(string)
+else
+    string = ['b³edy wysz³y po za mo¿liwe zakresy'];
+    disp(string)
+end
+
 %plot(checkedRef,response);
 %hold on;
 %plot(reference(:,TIME),reference(:,OUTPUT));
 %hold off;
 %--------------------koniec sprawdzania odpowiedzi z danymi referencyjnymi
-
-
 
 
 
