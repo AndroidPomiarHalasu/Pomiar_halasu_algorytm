@@ -1,8 +1,8 @@
 clear all;
 %wspczynniki filtrów wziête po obliczeniu plikiem "wspoczynniki_filtru.m"
 load('referenceData\correctionFreqReference.mat');
-load('modeleFiltrow\probkowanie_48000\filtrA_ss.mat')
-load('modeleFiltrow\probkowanie_48000\filtrC_ss.mat')
+load('modeleFiltrow\probkowanie_44100\filtrA_ss.mat')
+load('modeleFiltrow\probkowanie_44100\filtrC_ss.mat')
 
 [aMag,aPhase,aOmega] = bode(aModel,reference(:,1)'*2 * pi());
 [cMag,cPhase,cOmega] = bode(cModel,reference(:,1)'*2 * pi());
@@ -86,7 +86,7 @@ return
 %-------------INNY SPOSÓB----------
 
 
-Fs = 48000;
+Fs = 44100;
 
 endTime = 0.2;
 time = 0:1/Fs:endTime -1/Fs;
@@ -116,9 +116,15 @@ for freq = reference(:,1)' %pozwala na generacje sinusów o kolejnych czêstotliwo
      disp('sprawdzanie filtru dla zadanego sygna³u');
     %---------------------------START petla dzia³ania filtru na sygna³ 
     for i = 1:endTime*Fs
-        i
-        aStatesNext = aModel.a * aStates + aModel.b * p(i);
-        aOutput(i) = aModel.c * aStates + aModel.d *p(i);
+        
+        aStatesNext(1) = aModel.a(1,:)*aStates + p(i);
+        aStatesNext(2) = aModel.a(2,1) * aStates(1) + p(i);
+        aStatesNext(3) = aModel.a(3,2) * aStates(2) + p(i);
+        aStatesNext(4) = aStates(3) + p(i);
+        aStatesNext(5) = aModel.a(5,4) * aStates(4) + p(i);
+        aStatesNext(6) = aModel.a(6,5) * aStates(5) + p(i);
+
+        aOutput(i) = aModel.c * aStates;
         aStates = aStatesNext;
     
     end
@@ -126,6 +132,8 @@ for freq = reference(:,1)' %pozwala na generacje sinusów o kolejnych czêstotliwo
     scatter(time,aOutput);
     hold on;
     plot(time,p);
+    
+    
     pause;
     %---------------------------KONIEC petla dzia³ania filtru na sygna³ 
     
