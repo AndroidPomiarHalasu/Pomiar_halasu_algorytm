@@ -23,13 +23,13 @@ end
 
 pInput = p; %kopia sygna³u wejœciowego
 
-%--------------------- START ------ poziom dŸwiêku A uœredniony wed³ug charakterystyki czasowej F
-pA = filterA(p, Fs);
-p = (pA.^2)/(p0^2);%sta³a u³atwiaj¹ca dalsze obliczenia
+%--------------------- START ------ poziom dŸwiêku uœredniony wed³ug charakterystyki czasowej F
+
+p = (p.^2)/(p0^2);%sta³a u³atwiaj¹ca dalsze obliczenia
 
 %-----------------obliczanie RMS:
 RMSvalues = endTime*Fs / RMSwindow;
-yRMS= reshape(pA,RMSwindow,RMSvalues);%w kolumnach poszczególne wartoœci y do oddzielnych RMS
+yRMS= reshape(p,RMSwindow,RMSvalues);%w kolumnach poszczególne wartoœci y do oddzielnych RMS
 yRMS = rms(yRMS,1);
 %-----------------KONIEC obliczanie RMS
 
@@ -59,7 +59,7 @@ end
 T = 1; %czas obserwacji
 nSamplesT = floor(T * Fs); %iloœæ próbek przypadaj¹ca na czas obserwacji, zaokr¹glenie w dó³
 sampleTime = 1/Fs; %czas trwania jednej próbki
-nT = floor(length(pA)/nSamplesT); % iloœæ odddzielnych sca³kowanych wartoœci
+nT = floor(length(p)/nSamplesT); % iloœæ odddzielnych sca³kowanych wartoœci
 Laeq = zeros(nT,1);
 Ea = 0; %wartoœæ ca³ki w wyznaczonym przedziale - ekspozycja a na dŸwiêk
 
