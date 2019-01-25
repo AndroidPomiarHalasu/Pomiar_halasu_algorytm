@@ -30,6 +30,8 @@ DenominatorC = [ 1.0, -2.345810334051762, 1.726346371746705, -0.4112672811692883
 counter = 1;
 dbA = zeros(1,length(reference(:,1)));
 dbC = zeros(1,length(reference(:,1)));
+dbA_errors = zeros(1,length(reference(:,1)));
+dbC_errors = zeros(1,length(reference(:,1)));
 for freq = reference(:,1)' %pozwala na generacje sinusów o kolejnych czêstotliwoœciach z reference
     disp('inicjalizacja dla czestotliwosci'),freq
     
@@ -102,6 +104,8 @@ classOfFilterA = 1;
 classOfFilterC = 1;
 for i = 1:length(reference(:,FREQ)')
     %sprawdzanie klasy dla filtru A
+    dbA_errors(i) = reference(i,OUTPUT_A)-dbA(i);
+    dbC_errors(i) = reference(i,OUTPUT_C)-dbC(i);
     if classOfFilterA == 1 &&...
       (reference(i,OUTPUT_A) + reference(i,CLASS1_PLUS) < dbA(i) ||...
       reference(i,OUTPUT_A) + reference(i,CLASS1_MINUS) > dbA(i))

@@ -88,18 +88,21 @@ classOfMeter = 1;
 indexTime = 1;
 outputState = Leq(end); %ostatnia wartoœæ dla tego sygna³u to stan ustalony 
 response = [];
-checkedRef = [];
+checkedRefTime = [];
+error = [];
+checkedRefOutput = [];
 for t = time
   indexRef = 1;
   
    for ref = reference(:,TIME)'
        if ref == t*1000 %razy 1000 bo ref jest w milisekundach
          
-           checkedRef = [checkedRef,ref];%dodaj do tablicy kolejn¹ wartoœæ czasu któr¹ sprawdzono
+           checkedRefTime = [checkedRefTime,ref];%dodaj do tablicy kolejn¹ wartoœæ czasu któr¹ sprawdzono
            
            resp = Leq(indexTime)-outputState;
            response = [response,resp];%dodaj do tablicy kolejn¹ wartoœæ odpowiedzi 
-           
+           error = [error, reference(indexRef,OUTPUT)- resp];
+           checkedRefOutput = [ checkedRefOutput,reference(indexRef,OUTPUT)]; 
            %sprawdzanie klasy
            if classOfMeter == 1 &&...
               (reference(indexRef,OUTPUT) + reference(indexRef,CLASS1_PLUS) < resp ||...
@@ -119,7 +122,7 @@ for t = time
 indexTime = indexTime + 1;
 end
 
-checkedRef
+checkedRefTime
 response
 if classOfMeter ~= -1
     string = ['b³êdy w normie dla miernika klasy ',num2str(classOfMeter)];
